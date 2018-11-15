@@ -1,0 +1,610 @@
+---
+output:
+  html_document: default
+  html_notebook: default
+---
+
+EDA of Loan Data by Amanullah Ashraf
+========================================================
+
+
+  ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+  
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(gridExtra)
+library(alr3)
+library(reshape2)
+library(dplyr)
+library(GGally)
+library(RColorBrewer)
+library(FField)
+library(ggrepel)
+
+```
+
+
+```{r echo=FALSE, Load_the_Data}
+
+# Load the Data
+ld <-read.csv('prosperLoanData.csv')
+
+```
+
+This data set is about the people bought loan. How much is their loan, their credit grade,
+occupation, income range, loan amout, stated monthly income, employment status etc.
+
+
+# Univariate Plots Section
+
+## Summary of Loan Status 
+
+```{r echo=FALSE}
+
+
+# Summary of different columns
+
+summary(ld$LoanStatus)
+
+```
+
+## Summary of Loan Original Amount
+```{r  echo=FALSE}
+
+summary(ld$LoanOriginalAmount)
+
+```
+
+## Mean, Median
+```{r  echo=FALSE}
+
+mean(ld$LoanOriginalAmount) # Mean of LoanOriginalAmount
+
+
+median(ld$LoanOriginalAmount) # Median of LoanOriginalAmount
+```
+
+
+## Range of Loan Original Amount
+
+```{r  echo=FALSE}
+
+range(ld$LoanOriginalAmount) # Range of values in LoanOriginalAmount column
+
+```
+
+## Range of Stated Monthly Income
+```{r  echo=FALSE}
+
+range(ld$StatedMonthlyIncome) # Range of values in StatedMonthlyIncome column
+
+```
+
+## Range of Term Column
+
+```{r  echo=FALSE}
+
+range(ld$Term) # Range of values in EmploymentStatusDuration column
+
+```
+
+# Plotting histogram of different columns
+
+```{r  echo=FALSE}
+
+qplot(x=LoanStatus, data=ld) + 
+  #scale_x_discrete(labels = abbreviate) + 
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+Above graph shows current loan status of the borrower
+
+```{r  echo=FALSE}
+
+qplot(x=Occupation, data=ld) +
+  #scale_x_discrete(labels = abbreviate) + 
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+Above graph shows different occupation of the borrowers
+
+
+```{r  echo=FALSE}
+
+qplot(x=EmploymentStatus, data=ld) 
+
+```
+
+Above graph shows current employment status of the borrower
+
+
+```{r  echo=FALSE}
+
+qplot(x=EmploymentStatusDuration, data=ld)
+
+```
+
+Above graph shows for how long borrower has been employed
+
+```{r  echo=FALSE}
+
+qplot(x=IncomeRange, data=ld) + 
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+Above graph shows income range of the borrowers
+
+```{r  echo=FALSE}
+
+qplot(x=CreditGrade, data=ld) 
+
+```
+
+Above graph shows credit grade of the borrower
+
+```{r  echo=FALSE}
+
+qplot(x=LoanOriginalAmount, data=ld) 
+
+```
+
+Above graph shows how much loan of original amount taken
+
+```{r  echo=FALSE}
+
+qplot(x=BorrowerState, data=ld)  + 
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+Above plot shows which state has highest borrowing
+
+```{r  echo=FALSE}
+
+ggplot(aes(x=Term), data=ld) +
+  geom_histogram(binwidth = 25)
+
+```
+
+Above plot shows duration of the loan
+
+```{r  echo=FALSE}
+
+qplot(x=IsBorrowerHomeowner, data=ld) + 
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+Above graph shows the purpose for taking a loan
+
+```{r  echo=FALSE}
+
+qplot(x=LoanOriginationQuarter, data=ld)+ 
+  scale_x_discrete(labels = abbreviate) + 
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+Above graph shows which quarter of the year loan amount was taken
+
+# Univariate Analysis
+
+
+
+### What is the structure of your dataset?
+
+Loan data set is compsed of 113937 obersvation and 81 variables. In the data set there 
+
+are values which are numceric and other are categorical. It contain information about
+
+peolple who took loan and their current ststus. It contain information about their occupation
+
+thier income, state, credit rating, loan status, employment staus etc.  
+
+### What is/are the main feature(s) of interest in your dataset?
+
+Borrower Occupation, thier income range and how much loan original amount they got and how
+
+many have paid them back. 
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest?
+
+Other columns like borrower credit rating, borrower state, stated monthly income etc are
+
+helpful as well in investigation. 
+
+### Did you create any new variables from existing variables in the dataset?
+
+No new variable is created as data set already contain quite large number of variables. 
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this?
+
+Colums which I am using is quite clean. I didnt feel any need to clean it.  
+
+# Bivariate Plots Section
+
+## Employment Status wise loan status
+
+```{r echo=FALSE, Bivariate_Plots}
+
+by(ld$LoanStatus, ld$EmploymentStatus, summary) 
+
+```
+
+## This shows LoanStatus wise LoanOriginalAmount where loan is still due
+
+```{r echo=FALSE}
+
+by(ld$LoanOriginalAmount, ld$LoanStatus=='Current', summary) 
+
+```
+
+
+# Checking Relationship between different vriables
+
+## Checking Relationship between StatedMonthlyIncome & LoanOriginalAmount
+
+```{r echo=FALSE}
+
+cor.test(ld$StatedMonthlyIncome, ld$LoanOriginalAmount, method='pearson')
+
+```
+
+## Checking Relationship between Term & LoanOriginalAmount
+
+```{r echo=FALSE}
+
+cor.test(ld$Term, ld$LoanOriginalAmount, method='pearson')
+
+```
+
+## Checking Relationship between EmploymentStatusDuration & LoanOriginalAmount
+
+```{r echo=FALSE}
+
+cor.test(ld$EmploymentStatusDuration, ld$LoanOriginalAmount, method='pearson')
+
+```
+
+
+## Checking Relationship between StatedMonthlyIncome & EmploymentStatusDuration
+
+```{r echo=FALSE}
+
+cor.test(ld$StatedMonthlyIncome, ld$EmploymentStatusDuration, method='pearson')
+
+```
+
+
+# Histogram of 2 variables
+
+
+```{r echo=FALSE}
+
+qplot(  x = ld$LoanOriginalAmount,
+        data = ld, 
+        xlab ='LoanOriginalAmount(USD)',
+        ylab='count',
+        binwidth = 2500,
+        geom='freqpoly',
+        color=LoanStatus) +
+  scale_x_continuous(limits = c(0, 35000), breaks = seq(0, 35000, 10000))
+
+```
+
+The above graph showes borrower loan status and their loan original amount in order 
+to check the current status, defaulters and who had alreay paid the amount.
+
+```{r echo=FALSE}
+
+
+  qplot(x=Term, y=LoanOriginalAmount,
+      data=ld, geom='boxplot') +
+  geom_point(alpha=1/20 , position=position_jitter(h=0), color='orange')
+
+
+```
+
+This box plot is showing 5 number summary of Term column against Loan original amount.
+
+
+
+```{r echo=FALSE}
+
+ggplot(aes(x=StatedMonthlyIncome, y=LoanOriginalAmount), data=ld) +
+  geom_point(fill=I("#F79420"), color=I("black"), shape=21) +
+  stat_smooth(method="lm") +
+  scale_x_continuous(lim = c(0, quantile(ld$StatedMonthlyIncome, 0.99)) ) +
+  scale_y_continuous(lim = c(0, quantile(ld$LoanOriginalAmount, 0.99)) ) +
+  ggtitle("LoanData: StatedMonthlyIncome vs. LoanOriginalAmount(USD)")
+
+```
+
+This scatter plot shows borrower original Loan amount and their montly income, 
+inorder to find out the loan trend among the monthly income borrowers. As the
+monthly rises, loan amount is also rising with it. Means, more monthly income
+you have, more loan amount you can get.
+
+
+```{r echo=FALSE}
+
+# Grouping by BorrowerState
+
+ld_by_State <- group_by(ld, BorrowerState)
+ld_mp_by_State <- summarise(ld_by_State, mean = mean(LoanOriginalAmount))
+ld_mp_by_State
+
+# Grouping by EmploymentStatus
+
+ld_by_EmpStat <- group_by(ld, EmploymentStatus)
+ld_mp_by_EmpStat <- summarise(ld_by_EmpStat, mean = mean(LoanOriginalAmount))
+ld_mp_by_EmpStat
+
+# Assign grouping to variables
+
+plot1 <-  ggplot(aes(x=mean), data=ld_mp_by_State) + 
+  geom_histogram(binwidth=200) +
+  ggtitle('Mean loan by State')
+
+plot2 <- ggplot(aes(x=mean), data=ld_mp_by_EmpStat) + 
+          geom_histogram(binwidth=200) +
+          ggtitle('Mean loan by EmpStatus')
+
+# Plotting side by side in order to view
+
+grid.arrange(plot1, plot2, ncol=2)
+
+```
+
+Plotting side by side in order to view Mean of loan by state and by Employment status.
+
+```{r echo=FALSE}
+
+ggplot(aes(x = LoanOriginalAmount), data = subset(ld, !is.na(LoanStatus))) +
+  geom_freqpoly(aes(color = LoanStatus)) +
+  scale_x_log10()
+
+```
+
+```{r echo=FALSE}
+
+qplot(x = LoanOriginalAmount, data = ld) + facet_wrap(~LoanStatus) +
+  scale_x_log10()
+
+```
+
+Histogram of loan amount according to loan status
+
+```{r echo=FALSE}
+
+qplot(x=LoanStatus, y=LoanOriginalAmount,
+      data=ld, geom='boxplot') + 
+  geom_point(alpha=1/20 , position=position_jitter(h=0), color='orange') +
+    theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+This box plot is showing 5 number summary of loan status colum against loan original amount.
+
+# Bivariate Analysis
+
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the dataset?
+
+I tried to find out the different combination of coulms with the Loan Status. For example,
+
+Loan Status with loan original amount, loan status with with occupation, loan status with 
+
+employment status etc. Drew different kinds of plots.
+
+### Did you observe any interesting relationships between the other features \
+ (not the main feature(s) of interest)?
+
+Yes, the relation between EmploymentStatusDuration and LoanOriginalAmount and other one
+
+between StatedMonthlyIncome and EmploymentStatusDuration.
+
+### What was the strongest relationship you found?
+
+The strogest relationship exist between Term and LoanOriginalAmount, 
+
+i.e 0.3389275
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, Multivariate_Plots}
+
+# Creating a new data frame
+
+ld.fc_by_Loanamt_Occ <- ld %>%
+  filter(!is.na(EmploymentStatus)) %>%
+  group_by(EmploymentStatus, Occupation, LoanOriginalAmount) %>%
+  summarise(mean_loanamt=mean(LoanOriginalAmount),
+            median_loanamt=median(LoanOriginalAmount),
+            n=n()) %>%
+  ungroup() %>%
+  arrange(LoanOriginalAmount)
+
+# Drwaing line grpah between LoanOriginalAmount, Occupation, EmploymentStatus. 
+
+ggplot(aes(x = Occupation , y = LoanOriginalAmount),
+       data = subset(ld.fc_by_Loanamt_Occ, !is.na(EmploymentStatus))) +
+  geom_line(aes(color = EmploymentStatus)) +
+  theme(text = element_text(size=9),
+        axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+Drwaing line grpah between LoanOriginalAmount, Occupation, EmploymentStatus. This will 
+show the employment status of the borrower, thier occupation and thier loan amount.
+
+```{r echo=FALSE}
+
+# Creating a new data frame
+
+ld.fc_by_Loanamt_Occ.wide <- dcast(ld.fc_by_Loanamt_Occ,
+                                   LoanOriginalAmount ~ EmploymentStatus,
+                                   value.var = 'median_loanamt')
+#head(ld.fc_by_Loanamt_Occ.wide)
+
+
+
+ggplot(aes(x = LoanOriginalAmount, y = Employed),
+       data = ld.fc_by_Loanamt_Occ.wide) +
+  geom_line()
+  # geom_hline(yintercept = 1, alpha=0.3, linetype=2)
+
+```
+
+This line graph is showing the employed borrower loan amount. Most of the 
+people on average took below $10,000 loan amount, as there are more black
+lines in the range of $0 to $10,000
+
+
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+Yes, the relationship between loan amount, employment status and occupation. 
+
+### Were there any interesting or surprising interactions between features?
+
+Yes, borrower who are retired were also given loan amount.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+
+------
+
+# Final Plots and Summary
+
+
+
+### Plot One
+
+
+```{r echo=FALSE, Plot_One}
+
+qplot(x=IncomeRange, y=LoanOriginalAmount, data=ld, geom='boxplot') +
+  ggtitle("IncomeRange vs. LoanOriginalAmount(USD)") +
+  theme(text = element_text(size=10),
+        axis.text.x = element_text(angle=90, hjust=1)) +
+  geom_point(alpha=1/20 , position=position_jitter(h=0), color='green')
+  
+
+```
+
+### Description One
+
+Borrower of different income range are shown on the X-axis and their corresponding loan amount are on the Y-axis. 
+From the above graph we can say that there is a kind of symetry of the loan amount taken. Except $100,000+ income 
+range group, almost all other group took, $25000 loan amount. The highest loan amount taken by $100,000 income range
+group i.e $35,000. They are good traget market segmentation for the lender. Lender can offer them different products
+inorder to retain them.
+
+### Plot Two
+
+```{r echo=FALSE, Plot_Two}
+
+ggplot(aes(x = StatedMonthlyIncome, y = LoanOriginalAmount), data = ld) + 
+  geom_point(alpha=0.09 , position=position_jitter(h=0), color='orange') + 
+  geom_line(stat='summary', fun.y=mean,  color='green') +
+ # geom_line(stat='summary', fun.y=quantile, fun.args = list(probs = .1), linetype=2,   color='blue') +
+ # geom_line(stat='summary', fun.y=quantile, fun.args = list(probs = .5), linetype=2, color='black') +
+ # geom_line(stat='summary', fun.y=quantile, fun.args = list(probs = .9), linetype=2, color='red') +
+  scale_x_continuous(limits = c(0, 200000), breaks = seq(0, 200000, 25000)) + 
+  ggtitle("LoanData: StatedMonthlyIncome vs. LoanOriginalAmount(USD)")
+
+```
+
+### Description Two
+
+From the above graph we can say that most of the loan are taken by those whose monthly income is from $0 to $25,000. 
+This group almost took $35,000 loan amount. The second major chunck on X-axis is from From 25,000 to 50,000. Except few 
+exceptions, the second group on average took $25000 loan amount. One major thing to note from the above graph is, those 
+whose monthly income ranging from $0 to $25000 took most of the loan. One reson might be that they have low monthly 
+income, so inorder to meet their expenses they need to take loan. Lender can target this group in their markting stratigies.
+
+### Plot Three
+
+```{r echo=FALSE, Plot_Three}
+
+ld.fc_by_Loanamt_Occ.wide <- dcast(ld.fc_by_Loanamt_Occ,
+                                   LoanOriginalAmount ~ EmploymentStatus,
+                                   value.var = 'median_loanamt')
+head(ld.fc_by_Loanamt_Occ.wide)
+
+
+Plot3 <- ggplot(aes(x = LoanOriginalAmount, y = Employed),
+         data = ld.fc_by_Loanamt_Occ.wide) +
+         geom_line()+
+         geom_hline(yintercept = 1, alpha=0.3, linetype=2) + 
+         ggtitle("LoanOriginalAmount vs. Employed")
+
+Plot4 <- ggplot(aes(x = LoanOriginalAmount, y = Retired),
+         data = ld.fc_by_Loanamt_Occ.wide) +
+         geom_line()+
+         geom_hline(yintercept = 1, alpha=0.3, linetype=2) + 
+         ggtitle("LoanOriginalAmount vs. Retired")
+
+grid.arrange(Plot3, Plot4, ncol=2)  
+
+```
+
+### Description Three
+
+From the above graph we can see that loan amounts were given to both Employed and Retired persons. We can see that loan
+amount to Retired people were $10000 majority of the times, but people were given in $10,000 to $25000 range as well.
+employed people are all over the placeses on the graph. This shows that employed people are availaing more loan than
+retired people. Lender can come up with some good product for employed segment of loan borrower.
+
+
+# Reflection
+
+From the graphs drwan above we can observe the following information:
+According to loan status, majority of the people fall under "Currently" section, means currently majority of people have taken loan 
+who are employed under the income range of $25000 to $49,999. Majority of the people took upto $25000 loan amount. State wise, people 
+from California took most of the loan. Almost half of the population of the borrower are home owners. Occupation wise highest among 
+them who took loan is Nurse(RN). 
+So we can hypothesise by saying that, currently people are under debt, mostly from california who are employed under the Nurse(RN) 
+occupation with the monthly income range of $25000 > to $49,999. We can further test our hypothesis by doing regression analysis. 
+
+Plot 1 shows income range of the people and their borrwed amount. One of the income range group took $35000 loan.
+They are good traget market for lender. Lender can introduce new products to them, offer discount, offer prizes etc.  
+From the above plot 2 we can say that most of the loan are taken by those whose monthly income is from $0 to $25,000.
+Low imcome are majority who avail the loan opportunity. 
+Plot 3 shows that Employed people are availaing more loan than retired people. Why is that? Are they unable to meet 
+their expenses from their job as they are employed or inflation is high which in turn forced them to take loan? 
+From so many columns it is difficiult to a select few colums for analysis. Good thing about Data set is, it is almost 
+clean, while analyzing. It is a surprises to know that people who are retired also got loan amount. 
